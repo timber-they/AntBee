@@ -12,7 +12,7 @@ namespace AntMe.Player.AntBee
         LastName = ""
     )]
     [Caste(
-        Name = "Default",
+        Name = "default",
         AttackModifier = 0,
         EnergyModifier = 0,
         LoadModifier = 0,
@@ -21,10 +21,31 @@ namespace AntMe.Player.AntBee
         SpeedModifier = 0,
         ViewRangeModifier = 0
     )]
+    [Caste(
+        Name = "fighter",
+        AttackModifier = 0,
+        EnergyModifier = 0,
+        LoadModifier = 0,
+        RangeModifier = 0,
+        RotationSpeedModifier = 0,
+        SpeedModifier = 0,
+        ViewRangeModifier = 0
+        )]
+    [Caste(
+        Name = "searcher",
+        AttackModifier = 0,
+        EnergyModifier = 0,
+        LoadModifier = 0,
+        RangeModifier = 0,
+        RotationSpeedModifier = 0,
+        SpeedModifier = 0,
+        ViewRangeModifier = 0
+        )]
     public class AntBeeClass : BaseAnt
     {
+        public static long timer = 0;
         #region Caste
-        
+
         /// <summary>
         /// Every time that a new ant is born, its job group must be set. You can 
         /// do so with the help of the value returned by this method.
@@ -34,7 +55,13 @@ namespace AntMe.Player.AntBee
         /// <returns>Caste-Name for the next ant</returns>
         public override string ChooseCaste(Dictionary<string, int> typeCount)
         {
-            return "Default";
+            int r = RandomNumber.Number(1, 3);
+            if (r == 1)
+                return "default";
+            else if (r == 2)
+                return "searcher";
+            else
+                return "fighter";
         }
 
         #endregion
@@ -48,6 +75,8 @@ namespace AntMe.Player.AntBee
         /// </summary>
         public override void Waiting()
         {
+            TurnByDegrees(RandomNumber.Number(20));
+            GoForward();
         }
 
         /// <summary>
@@ -57,6 +86,7 @@ namespace AntMe.Player.AntBee
         /// </summary>
         public override void GettingTired()
         {
+            GoToAnthill();
         }
 
         /// <summary>
@@ -77,6 +107,17 @@ namespace AntMe.Player.AntBee
         /// </summary>
         public override void Tick()
         {
+            timer++;
+            if (CarryingFruit != null && timer > 10)
+            {
+                Drop();
+            }
+            if (Destination == null && timer > 10)
+            {
+                timer = 0;
+                TurnByDegrees(1);
+                GoForward();
+            }
         }
 
         #endregion
@@ -91,6 +132,11 @@ namespace AntMe.Player.AntBee
         /// <param name="fruit">spotted fruit</param>
         public override void Spots(Fruit fruit)
         {
+            if (!IsTired && Caste != "fighter" && CarryingFruit == null)
+            {
+                TurnToDetination(fruit);
+                GoToDestination(fruit);
+            }
         }
 
         /// <summary>
@@ -101,6 +147,12 @@ namespace AntMe.Player.AntBee
         /// <param name="sugar">spotted sugar</param>
         public override void Spots(Sugar sugar)
         {
+            if (!IsTired && Caste != "fighter" && CarryingFruit == null && Destination == null)
+            {
+                TurnToDetination(sugar);
+                GoToDestination(sugar);
+            }
+            MakeMark(Direction);
         }
 
         /// <summary>
@@ -112,6 +164,10 @@ namespace AntMe.Player.AntBee
         /// <param name="fruit">reached fruit</param>
         public override void DestinationReached(Fruit fruit)
         {
+            Take(fruit);
+            GoToAnthill();
+            if (NeedsCarrier(fruit))
+                MakeMark(1);
         }
 
         /// <summary>
@@ -123,6 +179,9 @@ namespace AntMe.Player.AntBee
         /// <param name="sugar">reached sugar</param>
         public override void DestinationReached(Sugar sugar)
         {
+            Take(sugar);
+            GoToAnthill();
+            MakeMark(0);
         }
 
         #endregion
@@ -137,6 +196,16 @@ namespace AntMe.Player.AntBee
         /// <param name="marker">marker</param>
         public override void DetectedScentFriend(Marker marker)
         {
+            if (Caste == "fighter" && !IsTired)
+            {
+                Stop();
+            }
+            if (Caste != "fighter" && CarryingFruit == null && !IsTired)
+            {
+                Stop();
+                TurnToDirection(marker.Information);
+                GoForward();
+            }
         }
 
         /// <summary>
@@ -174,6 +243,18 @@ namespace AntMe.Player.AntBee
         /// <param name="ant">spotted ant</param>
         public override void SpotsEnemy(Ant ant)
         {
+            if (Caste == "default")
+            {
+                GoAwayFrom(ant);
+            }
+            else if (Caste == "searcher")
+            {
+                GoAwayFrom(ant);
+            }
+            else if (Caste == "fighter" && FriendlyAntsFromSameCasteInViewrange > 0 && !IsTired)
+                Attack(ant);
+            else
+                GoAwayFrom(ant);
         }
 
         /// <summary>
@@ -184,6 +265,30 @@ namespace AntMe.Player.AntBee
         /// <param name="bug">spotted bug</param>
         public override void SpotsEnemy(Bug bug)
         {
+            if (Caste == "default")
+            {
+                if (CarryingFruit != null && CurrentEnergy > MaximumEnergy / 2)
+                    GoToAnthill();
+                else
+                {
+                    Drop();
+                    GoAwayFrom(bug);
+                }
+            }
+            else if (Caste == "searcher")
+            {
+                if (CarryingFruit != null && CurrentEnergy > MaximumEnergy / 2)
+                    GoToAnthill();
+                else
+                {
+                    Drop();
+                    GoAwayFrom(bug);
+                }
+            }
+            else if (Caste == "fighter")
+                Attack(bug);
+            else
+                GoAwayFrom(bug);
         }
 
         /// <summary>
@@ -194,6 +299,18 @@ namespace AntMe.Player.AntBee
         /// <param name="ant">attacking ant</param>
         public override void UnderAttack(Ant ant)
         {
+            if (CarryingFruit != null)
+                Drop();
+            if (Caste == "default")
+            {
+                GoAwayFrom(ant);
+            }
+            else if (Caste == "searcher")
+            {
+                GoAwayFrom(ant);
+            }
+            else if (Caste == "fighter")
+                Attack(ant);
         }
 
         /// <summary>
@@ -204,6 +321,18 @@ namespace AntMe.Player.AntBee
         /// <param name="bug">attacking bug</param>
         public override void UnderAttack(Bug bug)
         {
+            if (CarryingFruit != null)
+                Drop();
+            if (Caste == "default")
+            {
+                GoAwayFrom(bug);
+            }
+            else if (Caste == "searcher")
+            {
+                GoAwayFrom(bug);
+            }
+            else if (Caste == "fighter")
+                Attack(bug);
         }
 
         #endregion
