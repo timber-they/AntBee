@@ -1,4 +1,5 @@
 using AntMe.English;
+using AntMe.SharedComponents.Plugin;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,63 +14,81 @@ namespace AntMe.Player.AntBee
     )]
     [Caste(
         Name = "default",
-        AttackModifier = 0,
+        AttackModifier = -1,
         EnergyModifier = 0,
-        LoadModifier = 0,
-        RangeModifier = 0,
-        RotationSpeedModifier = 0,
+        LoadModifier = 1,
+        RangeModifier = 1,
+        RotationSpeedModifier = -1,
         SpeedModifier = 0,
         ViewRangeModifier = 0
     )]
     [Caste(
         Name = "fighter",
-        AttackModifier = 0,
+        AttackModifier = 2,
         EnergyModifier = 0,
-        LoadModifier = 0,
+        LoadModifier = -1,
         RangeModifier = 0,
-        RotationSpeedModifier = 0,
+        RotationSpeedModifier = -1,
         SpeedModifier = 0,
         ViewRangeModifier = 0
         )]
     [Caste(
         Name = "searcher",
-        AttackModifier = 0,
+        AttackModifier = -1,
         EnergyModifier = 0,
-        LoadModifier = 0,
+        LoadModifier = -1,
         RangeModifier = 0,
         RotationSpeedModifier = 0,
         SpeedModifier = 0,
-        ViewRangeModifier = 0
+        ViewRangeModifier = 2
         )]
     [Caste(
         Name = "stand",
-        AttackModifier = 0,
-        EnergyModifier = 0,
-        LoadModifier = 0,
-        RangeModifier = 0,
-        RotationSpeedModifier = 0,
-        SpeedModifier = 0,
+        AttackModifier = 2,
+        EnergyModifier = -1,
+        LoadModifier = -1,
+        RangeModifier = -1,
+        RotationSpeedModifier = 2,
+        SpeedModifier = -1,
         ViewRangeModifier = 0
         )]
     [Caste(
         Name = "sugar",
-        AttackModifier = 0,
+        AttackModifier = -1,
         EnergyModifier = 0,
-        LoadModifier = 0,
+        LoadModifier = 1,
         RangeModifier = 0,
         RotationSpeedModifier = 0,
+        SpeedModifier = 1,
+        ViewRangeModifier = -1
+        )]
+    [Caste(
+        Name = "fighter2",
+        AttackModifier = 2,
+        EnergyModifier = 0,
+        LoadModifier = -1,
+        RangeModifier = 0,
+        RotationSpeedModifier = -1,
         SpeedModifier = 0,
         ViewRangeModifier = 0
         )]
+
+
     public class AntBeeClass : BaseAnt
     {
         public static bool[] erlaubt = null;
         public static Bug[] buggy = new Bug[101];
         public static int zahler = 0;
         public static long timer = 0;
-        public static Bug aimedbug = null;
+        public static Bug[] aimedbug = null;
+        public static Sugar[] zucker = new Sugar[4];
         public static bool spawned = false;
         public static Ant standed;
+        public static Anthill hill = null;
+        public static double[] aimedposition = new double[2];
+        public static double[,] aimedsugar = new double[4, 2] { {1000000, 1000000 }, { 1000000, 1000000 }, { 1000000, 1000000 }, { 1000000, 1000000 } };
+        public static Fruit[] apple = new Fruit[5];
+        public static double[,] aimedapple = new double[5, 2] { { 1000000, 1000000 }, { 1000000, 1000000 }, { 1000000, 1000000 }, { 1000000, 1000000 }, { 1000000, 1000000 } };
 
         #region Caste
 
@@ -82,15 +101,17 @@ namespace AntMe.Player.AntBee
         /// <returns>Caste-Name for the next ant</returns>
         public override string ChooseCaste(Dictionary<string, int> typeCount)
         {
-            int r = RandomNumber.Number(0,20);
+            int r = RandomNumber.Number(0, 20);
             if (spawned)
             {
-                if (r < 3)
-                    return "default";
-                else if (r < 6)
-                    return "sugar";
+                if (r < 0)
+                    return "stand";
                 else if (r < 8)
-                    return "searcher";
+                    return "default";
+                else if (r < 14)
+                    return "sugar";
+                else if (r < 16)
+                    return "fighter2";
                 else
                     return "fighter";
             }
@@ -112,9 +133,85 @@ namespace AntMe.Player.AntBee
         /// </summary>
         public override void Waiting()
         {
-            if (Caste != "stand")
+            /*if(Caste == "fighter" || Caste == "fighter2" && ForeignAntsInViewrange == 0)
             {
-                TurnByDegrees(RandomNumber.Number(20));
+                double x, y;
+                double direction, distance;
+                getcordsa(Coordinate.GetDistanceBetween(this, hill), Coordinate.GetDegreesBetween(this, hill), out x, out y);
+                getdirection(x, y, aimedposition[0], aimedposition[1], out direction);
+                TurnToDirection(Convert.ToInt16(direction));
+                getdistance(x, y, aimedposition[0], aimedposition[1], out distance);
+                GoForward(Convert.ToInt16(distance / 10));
+            }*/
+            if (Caste == "sugar")
+            {
+                double x, y;
+                double direction, distance;
+                int nearest = 0;
+                double lowestdistance = 1000000000000000;
+                getcordsa(Coordinate.GetDistanceBetween(this, hill), Coordinate.GetDegreesBetween(this, hill), out x, out y);
+                for (int i = 0; i < 4; i++)
+                {
+                    if (zucker[i] != null)
+                    {
+                        getdistance(x, y, aimedsugar[i, 0], aimedsugar[i, 1], out distance);
+                        if (distance < lowestdistance)
+                        {
+                            lowestdistance = distance;
+                            nearest = i;
+                        }
+                    }
+                }
+                if (lowestdistance < 10000 && zucker[nearest] != null)
+                {
+                    getdirection(x, y, aimedsugar[nearest, 0], aimedsugar[nearest, 1], out direction);
+                    TurnToDirection(Convert.ToInt32(direction));
+                    GoForward(Convert.ToInt32(lowestdistance));
+                }
+                else
+                {
+                    TurnByDegrees(RandomNumber.Number(20));
+                    GoForward();
+                }
+            }
+            else if(Caste == "default")
+            {
+                double x, y;
+                double direction, distance;
+                int nearest = 0;
+                double lowestdistance = 1000000000000000;
+                getcordsa(Coordinate.GetDistanceBetween(this, hill), Coordinate.GetDegreesBetween(this, hill), out x, out y);
+                for (int i = 0; i < 5; i++)
+                {
+                    if(apple[i] != null)
+                    {
+                        getdistance(x, y, aimedapple[i, 0], aimedapple[i, 1], out distance);
+                        if(distance < lowestdistance)
+                        {
+                            lowestdistance = distance;
+                            nearest = i;
+                        }
+                    }
+                }
+                if(lowestdistance < 10000 && apple[nearest] != null)
+                {
+                    getdirection(x, y, aimedapple[nearest, 0], aimedapple[nearest, 1], out direction);
+                    TurnToDirection(Convert.ToInt32(direction));
+                    GoForward();
+                }
+                else
+                {
+                    TurnByDegrees(RandomNumber.Number(20));
+                    GoForward();
+                }
+            }
+            else if (Caste == "stand")
+            {
+                GoToAnthill();
+            }
+            else
+            {
+                TurnByDegrees(RandomNumber.Number(180));
                 GoForward();
             }
         }
@@ -148,12 +245,18 @@ namespace AntMe.Player.AntBee
         /// </summary>
         public override void Tick()
         {
+            if (hill == null)
+            {
+                GoToAnthill();
+                hill = Destination as Anthill;
+                Stop();
+            }
             timer++;
             if (CarryingFruit != null && timer > 10)
             {
                 Drop();
             }
-            if(Destination == null && timer > 10)
+            if (Destination == null && timer > 10)
             {
                 timer = 0;
                 TurnByDegrees(1);
@@ -162,6 +265,45 @@ namespace AntMe.Player.AntBee
             if (Caste == "fighter" && Destination == null)
             {
                 Think("fighter");
+            }
+            for (int i = 0; i < 4; i++)
+            {
+                if(zucker[i] != null)
+                if (zucker[i].Amount == 0)
+                {
+                    zucker[i] = null;
+                    aimedsugar[i, 0] = 1000000;
+                    aimedsugar[i, 1] = 1000000;
+                }
+            }
+            if (CarryingFruit != null)
+            {
+                double x, y;
+                getcordsa(Coordinate.GetDistanceBetween(this, hill), Coordinate.GetDegreesBetween(this, hill), out x, out y);
+                for (int i = 0; i < 5; i++)
+                {
+                    if (apple[i] == CarryingFruit)
+                    {
+                        aimedapple[i, 0] = x;
+                        aimedapple[i, 1] = y;
+                        apple[i] = CarryingFruit;
+                        break;
+                    }
+                }
+            }
+            else if(Caste == "default")
+            {
+                double x, y;
+                getcordsa(Coordinate.GetDistanceBetween(this, hill), Coordinate.GetDegreesBetween(this, hill), out x, out y);
+                for (int i = 0; i < 5; i++)
+                {
+                    if (apple[i] != null && aimedapple[i, 0] <= x + 10 && aimedapple[i, 0] >= x - 10 && aimedapple[i, 1] <= y + 10 && aimedapple[i, 1] >= y - 10)
+                    {
+                        aimedapple[i, 0] = 1000000;
+                        aimedapple[i, 1] = 1000000;
+                        apple[i] = null;
+                    }
+                }
             }
         }
 
@@ -177,10 +319,24 @@ namespace AntMe.Player.AntBee
         /// <param name="fruit">spotted fruit</param>
         public override void Spots(Fruit fruit)
         {
-            if (!IsTired && Destination == null && CarryingFruit == null && Caste != "stand")
+            double x, y;
+            if (!IsTired && Destination == null && CarryingFruit == null && Caste == "default")
             {
                 TurnToDetination(fruit);
                 GoToDestination(fruit);
+            }
+            getapplecords(fruit, out x, out y);
+            for (int i = 0; i < 5; i++)
+            {
+                if (x > aimedapple[i, 0] - 1 && x < aimedapple[i, 0] + 1 && y < aimedapple[i, 1] - 1 && y < aimedapple[i, 1] + 1)
+                    break;
+                else if(apple[i] == null)
+                {
+                    aimedapple[i, 0] = x;
+                    aimedapple[i, 1] = y;
+                    apple[i] = fruit;
+                    break;
+                }
             }
         }
 
@@ -192,7 +348,21 @@ namespace AntMe.Player.AntBee
         /// <param name="sugar">spotted sugar</param>
         public override void Spots(Sugar sugar)
         {
-            if (!IsTired && Destination == null && CarryingFruit == null && Destination == null && Caste != "stand")
+            double x, y;
+            getcordss(sugar, out x, out y);
+            for (int i = 0; i < 4; i++)
+            {
+                if (x > aimedsugar[i, 0] - 1 && x < aimedsugar[i, 0] + 1 && y > aimedsugar[i, 1] - 1 && y < aimedsugar[i, 1] + 1)
+                    break;
+                else if (zucker[i] == null)
+                {
+                    aimedsugar[i, 0] = x;
+                    aimedsugar[i, 1] = y;
+                    zucker[i] = sugar;
+                    break;
+                }
+            }
+            if (!IsTired && Destination == null && CarryingFruit == null && Destination == null && Caste == "sugar")
             {
                 TurnToDetination(sugar);
                 GoToDestination(sugar);
@@ -225,11 +395,11 @@ namespace AntMe.Player.AntBee
             {
                 Take(sugar);
                 GoToAnthill();
-                MakeMark(0, 300);
+                //MakeMark(0, 300);
             }
-            else if(Caste == "searcher" && FriendlyAntsFromSameCasteInViewrange <= 1)
+            else if (Caste == "searcher" && FriendlyAntsFromSameCasteInViewrange <= 1)
             {
-                MakeMark(0, 700);
+                //MakeMark(0, 700);
             }
         }
 
@@ -247,7 +417,9 @@ namespace AntMe.Player.AntBee
         {
             if (Destination == null && Caste == "sugar" && marker.Information == 0)
                 GoToDestination(marker);
-            else if (Destination == null && Caste == "fighter" && marker.Information == 1 && FriendlyAntsFromSameCasteInViewrange > 15)
+            else if (Destination == null && (Caste == "fighter" || Caste == "fighter2" && ForeignAntsInViewrange == 0) && marker.Information == 1 && FriendlyAntsFromSameCasteInViewrange > 15)
+                GoToDestination(marker);
+            else if (Destination == null && Caste == "fighter2" && marker.Information == 2 && FriendlyAntsFromSameCasteInViewrange > 5)
                 GoToDestination(marker);
         }
 
@@ -260,6 +432,7 @@ namespace AntMe.Player.AntBee
         /// <param name="ant">spotted ant</param>
         public override void SpotsFriend(Ant ant)
         {
+
         }
 
         /// <summary>
@@ -286,10 +459,9 @@ namespace AntMe.Player.AntBee
         /// <param name="ant">spotted ant</param>
         public override void SpotsEnemy(Ant ant)
         {
-            if (Caste == "fighter" && FriendlyAntsFromSameCasteInViewrange > 20 && !IsTired)
+            if (Caste == "fighter2" && FriendlyAntsFromSameCasteInViewrange > 5 && !IsTired || Caste == "stand" && DistanceToAnthill < 100)
                 Attack(ant);
-            else
-                GoAwayFrom(ant);
+            MakeMark(2, 300);
         }
 
         /// <summary>
@@ -300,6 +472,14 @@ namespace AntMe.Player.AntBee
         /// <param name="bug">spotted bug</param>
         public override void SpotsEnemy(Bug bug)
         {
+            MakeMark(1, 400);
+            double x, y;
+            getcordsa(Coordinate.GetDistanceBetween(this, hill), Coordinate.GetDegreesBetween(this, hill), out x, out y);
+            if (FriendlyAntsInViewrange > 15 && x < 10 && x > -10 && y < 10 && y > -10)
+            {
+                Attack(bug);
+                return;
+            }
             if (Caste == "default")
             {
                 if (Destination == null)
@@ -313,15 +493,15 @@ namespace AntMe.Player.AntBee
                     GoAwayFrom(bug);
                 else
                     GoToAnthill();
-                aimedbug = bug;
             }
-            else if (Caste == "fighter" && !IsTired && FriendlyAntsFromSameCasteInViewrange > 20)
+            else if (Caste == "fighter" && !IsTired && FriendlyAntsFromSameCasteInViewrange > 15)
             {
                 Attack(bug);
             }
+            else if (Caste == "stand" && DistanceToAnthill < 100)
+                Attack(bug);
             else
                 GoToAnthill();
-            MakeMark(1, 300);
         }
 
         /// <summary>
@@ -332,18 +512,7 @@ namespace AntMe.Player.AntBee
         /// <param name="ant">attacking ant</param>
         public override void UnderAttack(Ant ant)
         {
-            if (CarryingFruit != null)
-                Drop();
-            if (Caste == "default")
-            {
-                GoAwayFrom(ant);
-            }
-            else if (Caste == "searcher")
-            {
-                GoAwayFrom(ant);
-            }
-            else if (Caste == "fighter")
-                Attack(ant);
+            Attack(ant);
         }
 
         /// <summary>
@@ -364,11 +533,285 @@ namespace AntMe.Player.AntBee
             {
                 Attack(bug);
             }
-            else if (Caste == "fighter")
+            else if (Caste == "fighter" && FriendlyAntsFromSameCasteInViewrange > 15)
                 Attack(bug);
-            MakeMark(1, 300);
+            else
+                GoAwayFrom(bug);
+            MakeMark(1, 400);
         }
 
+        public static void getcordsb(Bug bugp, out double x, out double y)
+        {
+            double distance = Coordinate.GetDistanceBetween(bugp, hill);
+            double anglet = Coordinate.GetDegreesBetween(bugp, hill);
+            double anglec = anglet * (Math.PI / 180);
+            double angleb = anglec;
+            if (anglet > 90 && anglet < 180)
+            {
+                angleb = anglec - 90 * (Math.PI / 180);
+                x = Math.Sin(angleb) * distance;
+                y = Math.Cos(angleb) * distance;
+            }
+            else if (anglet > 0 && anglet < 90)
+            {
+                angleb = anglec;
+                x = Math.Cos(angleb) * distance;
+                y = (-1) * Math.Sin(angleb) * distance;
+            }
+            else if (anglet > 270 && anglet < 360)
+            {
+                angleb = anglec - 270 * (Math.PI / 180);
+                x = (-1) * Math.Sin(angleb) * distance;
+                y = (-1) * Math.Cos(angleb) * distance;
+            }
+            else if (anglet > 180 && anglet < 270)
+            {
+                angleb = anglec - 180 * (Math.PI / 180);
+                x = (-1) * Math.Cos(angleb);
+                y = Math.Sin(angleb);
+            }
+            else if (anglet == 90)
+            {
+                x = 0;
+                y = distance;
+            }
+            else if (anglet == 270)
+            {
+                x = 0;
+                y = (-1) * distance;
+            }
+            else if (anglet == 180)
+            {
+                x = (-1) * distance;
+                y = 0;
+            }
+            else if (anglet == 0 || anglet == 360)
+            {
+                x = distance;
+                y = 0;
+            }
+            else
+            {
+                x = 0;
+                y = 0;
+            }
+        }
+        public static void getcordss(Sugar sugarp, out double x, out double y)
+        {
+            double distance = Coordinate.GetDistanceBetween(sugarp, hill);
+            double anglet = Coordinate.GetDegreesBetween(sugarp, hill);
+            double anglec = anglet * (Math.PI / 180);
+            double angleb = anglec;
+            if (anglet > 90 && anglet < 180)
+            {
+                angleb = anglec - 90 * (Math.PI / 180);
+                x = Math.Sin(angleb) * distance;
+                y = Math.Cos(angleb) * distance;
+            }
+            else if (anglet > 0 && anglet < 90)
+            {
+                angleb = anglec;
+                x = Math.Cos(angleb) * distance;
+                y = (-1) * Math.Sin(angleb) * distance;
+            }
+            else if (anglet > 270 && anglet < 360)
+            {
+                angleb = anglec - 270 * (Math.PI / 180);
+                x = (-1) * Math.Sin(angleb) * distance;
+                y = (-1) * Math.Cos(angleb) * distance;
+            }
+            else if (anglet > 180 && anglet < 270)
+            {
+                angleb = anglec - 180 * (Math.PI / 180);
+                x = (-1) * Math.Cos(angleb);
+                y = Math.Sin(angleb);
+            }
+            else if (anglet == 90)
+            {
+                x = 0;
+                y = distance;
+            }
+            else if (anglet == 270)
+            {
+                x = 0;
+                y = (-1) * distance;
+            }
+            else if (anglet == 180)
+            {
+                x = (-1) * distance;
+                y = 0;
+            }
+            else if (anglet == 0 || anglet == 360)
+            {
+                x = distance;
+                y = 0;
+            }
+            else
+            {
+                x = 0;
+                y = 0;
+            }
+        }
+        public static void getcordsa(double distance, double anglet, out double x, out double y)
+        {
+            double anglec = anglet * (Math.PI / 180);
+            double angleb = anglec;
+            if (anglet > 90 && anglet < 180)
+            {
+                angleb = anglec - 90 * (Math.PI / 180);
+                x = Math.Sin(angleb) * distance;
+                y = Math.Cos(angleb) * distance;
+            }
+            else if (anglet > 0 && anglet < 90)
+            {
+                angleb = anglec;
+                x = Math.Cos(angleb) * distance;
+                y = (-1) * Math.Sin(angleb) * distance;
+            }
+            else if (anglet > 270 && anglet < 360)
+            {
+                angleb = anglec - 270 * (Math.PI / 180);
+                x = (-1) * Math.Sin(angleb) * distance;
+                y = (-1) * Math.Cos(angleb) * distance;
+            }
+            else if (anglet > 180 && anglet < 270)
+            {
+                angleb = anglec - 180 * (Math.PI / 180);
+                x = (-1) * Math.Cos(angleb);
+                y = Math.Sin(angleb);
+            }
+            else if (anglet == 90)
+            {
+                x = 0;
+                y = distance;
+            }
+            else if (anglet == 270)
+            {
+                x = 0;
+                y = (-1) * distance;
+            }
+            else if (anglet == 180)
+            {
+                x = (-1) * distance;
+                y = 0;
+            }
+            else if (anglet == 0 || anglet == 360)
+            {
+                x = distance;
+                y = 0;
+            }
+            else
+            {
+                x = 0;
+                y = 0;
+            }
+        }
+
+        public static void getdirection(double x1, double y1, double x2, double y2, out double direction)
+        {
+            double angleb, anglea;
+            angleb = Math.Atan((y1 + y2) / (x1 + x2));
+            angleb = angleb * (180 / Math.PI);
+            if (y2 > y1)
+            {
+                if (x2 > x1)
+                {
+                    anglea = 360 - angleb;
+                }
+                else if (x2 < x1)
+                {
+                    anglea = 180 + angleb;
+                }
+                else
+                    anglea = 270;
+            }
+            else if (y2 < y1)
+            {
+                if (x2 > x1)
+                {
+                    anglea = angleb;
+                }
+                else if (x2 < x1)
+                {
+                    anglea = 180 - angleb;
+                }
+                else
+                    anglea = 90;
+            }
+            else
+            {
+                if (x2 > x1)
+                    anglea = 0;
+                else if (x2 < x1)
+                    anglea = 180;
+                else
+                    anglea = 0;
+            };
+            direction = anglea;
+        }
+
+        public static void getapplecords(Fruit applep, out double x, out double y)
+        {
+            double distance = Coordinate.GetDistanceBetween(applep, hill);
+            double anglet = Coordinate.GetDegreesBetween(applep, hill);
+            double anglec = anglet * (Math.PI / 180);
+            double angleb = anglec;
+            if (anglet > 90 && anglet < 180)
+            {
+                angleb = anglec - 90 * (Math.PI / 180);
+                x = Math.Sin(angleb) * distance;
+                y = Math.Cos(angleb) * distance;
+            }
+            else if (anglet > 0 && anglet < 90)
+            {
+                angleb = anglec;
+                x = Math.Cos(angleb) * distance;
+                y = (-1) * Math.Sin(angleb) * distance;
+            }
+            else if (anglet > 270 && anglet < 360)
+            {
+                angleb = anglec - 270 * (Math.PI / 180);
+                x = (-1) * Math.Sin(angleb) * distance;
+                y = (-1) * Math.Cos(angleb) * distance;
+            }
+            else if (anglet > 180 && anglet < 270)
+            {
+                angleb = anglec - 180 * (Math.PI / 180);
+                x = (-1) * Math.Cos(angleb);
+                y = Math.Sin(angleb);
+            }
+            else if (anglet == 90)
+            {
+                x = 0;
+                y = distance;
+            }
+            else if (anglet == 270)
+            {
+                x = 0;
+                y = (-1) * distance;
+            }
+            else if (anglet == 180)
+            {
+                x = (-1) * distance;
+                y = 0;
+            }
+            else if (anglet == 0 || anglet == 360)
+            {
+                x = distance;
+                y = 0;
+            }
+            else
+            {
+                x = 0;
+                y = 0;
+            }
+        }
+        public static void getdistance(double x1, double y1, double x2, double y2, out double distance)
+        {
+            double dx = x1 + x2;
+            double dy = y1 + y2;
+            distance = Math.Sqrt(dx * dx + dy * dy);
+        }
         #endregion
     }
 }
