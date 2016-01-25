@@ -29,8 +29,8 @@ namespace AntMe.Player.AntBee
         LoadModifier = -1,
         RangeModifier = -1,
         RotationSpeedModifier = 0,
-        SpeedModifier = 0,
-        ViewRangeModifier = 0
+        SpeedModifier = 1,
+        ViewRangeModifier = -1
         )]
     [Caste(
         Name = "fighter3",
@@ -39,8 +39,8 @@ namespace AntMe.Player.AntBee
         LoadModifier = -1,
         RangeModifier = -1,
         RotationSpeedModifier = 0,
-        SpeedModifier = 0,
-        ViewRangeModifier = 0
+        SpeedModifier = 1,
+        ViewRangeModifier = -1
         )]
     [Caste(
         Name = "searcher",
