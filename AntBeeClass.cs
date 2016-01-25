@@ -33,6 +33,16 @@ namespace AntMe.Player.AntBee
         ViewRangeModifier = 0
         )]
     [Caste(
+        Name = "fighter3",
+        AttackModifier = 2,
+        EnergyModifier = 0,
+        LoadModifier = -1,
+        RangeModifier = -1,
+        RotationSpeedModifier = 0,
+        SpeedModifier = 0,
+        ViewRangeModifier = 0
+        )]
+    [Caste(
         Name = "searcher",
         AttackModifier = -1,
         EnergyModifier = 0,
@@ -67,10 +77,10 @@ namespace AntMe.Player.AntBee
         AttackModifier = 2,
         EnergyModifier = 0,
         LoadModifier = -1,
-        RangeModifier = 0,
-        RotationSpeedModifier = -1,
-        SpeedModifier = 0,
-        ViewRangeModifier = 0
+        RangeModifier = -1,
+        RotationSpeedModifier = 0,
+        SpeedModifier = 1,
+        ViewRangeModifier = -1
         )]
 
 
@@ -95,6 +105,8 @@ namespace AntMe.Player.AntBee
         public static decimal time = 0;
         public static decimal[] lastact = new decimal[1000];
         public static int[,] enemyant = new int[10000, 3]; //Ist es, wer greift an, wie viele greifen an
+        public static int current1 = 10000;
+        public static int current2 = 10000;
 
         #region Caste
 
@@ -125,8 +137,10 @@ namespace AntMe.Player.AntBee
                     return "sugar";
                 else if (r < 5)
                     return "fighter2";
-                else
+                else if (r < 12)
                     return "fighter";
+                else
+                    return "fighter3";
             }
             else
             {
@@ -194,20 +208,34 @@ namespace AntMe.Player.AntBee
                 GoForward();
                 double x, y;
                 double direction, distance;
-                int highestamount = 0;
-                int angreifen = 0;
+                double lowestamount = 100000000000;
+                int angreifen = 200;
                 getcordsa(Coordinate.GetDistanceBetween(this, hill), Coordinate.GetDegreesBetween(this, hill), out x, out y);
                 for (int i = 0; i < 300; i++)
                 {
-                    getdistance(x, y, aimedposition[i, 0], aimedposition[i, 1], out distance);
-                    if ((verfugbar[i, 1] >= 10 || FriendlyAntsFromSameCasteInViewrange > 15) && aimedbug[i] != null && distance < 500 && time - lastact[i] < 5000 && distance > 5)
+                    if (aimedbug[i] != null)
                     {
-                                Think("Angriff weil beschlossen " + i);
-                                getdirection(x, y, aimedposition[i, 0], aimedposition[i, 1], out direction);
-                                TurnToDirection(Convert.ToInt32(direction));
-                                GoForward(Convert.ToInt32(distance / 5));
-                                return;
+                        distance = Coordinate.GetDistanceBetween(aimedbug[i], hill);
+                        if (verfugbar[i, 1] > 10 && aimedbug[i] != null && distance < lowestamount && time - lastact[i] < 5000 && distance < 5000)
+                        {
+                            current1 = i;
+                            lowestamount = distance;
+                            angreifen = i;
+                        }
                     }
+                }
+                getdistance(x, y, aimedposition[angreifen, 0], aimedposition[angreifen, 1], out distance);
+                TurnByDegrees(RandomNumber.Number(180));
+                GoForward();
+                if ((verfugbar[angreifen, 1] >= 10 || FriendlyAntsFromSameCasteInViewrange > 15) && aimedbug[angreifen] != null && distance < 5000 && time - lastact[angreifen] < 10000)
+                {
+                    Think("Angriff weil beschlossen " + angreifen);
+                    getdirection(x, y, aimedposition[angreifen, 0], aimedposition[angreifen, 1], out direction);
+                    /*TurnToDirection(Convert.ToInt32(direction));
+                    GoForward(Convert.ToInt32(distance / 5));*/
+                    Stop();
+                    Attack(aimedbug[angreifen]);
+                    return;
                 }
                 for (int i = 0; i < 300; i++)
                 {
@@ -218,24 +246,125 @@ namespace AntMe.Player.AntBee
                 }
                 for (int i = 0; i < 300; i++)
                 {
-                    if (verfugbar[i, 1] > highestamount && aimedbug[i] != null && verfugbar[i, 1] < 21)
+                    if (aimedbug[i] != null)
                     {
-                        highestamount = verfugbar[i, 1];
-                        angreifen = i;
+                        distance = Coordinate.GetDistanceBetween(aimedbug[i], hill);
+                        if (verfugbar[i, 1] > 10 && aimedbug[i] != null && distance < lowestamount && time - lastact[i] < 5000 && distance < 10000)
+                        {
+                            current1 = i;
+                            lowestamount = distance;
+                            angreifen = i;
+                        }
                     }
                 }
+                TurnByDegrees(RandomNumber.Number(180));
+                GoForward();
                 for (int i = 2; i < 300; i++)
                 {
+                    TurnByDegrees(RandomNumber.Number(180));
+                    GoForward();
                     if (verfugbar[angreifen, i] == 0)
                     {
                         verfugbar[angreifen, i] = Ameisenliste.IndexOf(this);
                         verfugbar[angreifen, 1]++;
-                        getdistance(x, y, aimedposition[i, 0], aimedposition[i, 1], out distance);
-                        if (verfugbar[angreifen, 1] >= 10 && aimedbug[i] != null && distance < 500 && time - lastact[i] < 5000 && distance > 5)
+                        getdistance(x, y, aimedposition[angreifen, 0], aimedposition[angreifen, 1], out distance);
+                        if (verfugbar[angreifen, 1] >= 10 && aimedbug[angreifen] != null && distance < 500 && time - lastact[angreifen] < 10000 && distance > 5)
                         {
-                            getdirection(x, y, aimedposition[i, 0], aimedposition[i, 1], out direction);
-                            TurnToDirection(Convert.ToInt32(direction));
-                            GoForward(Convert.ToInt32(distance / 5));
+                            Think("Angriff weil beschlossen " + angreifen);
+                            getdirection(x, y, aimedposition[angreifen, 0], aimedposition[angreifen, 1], out direction);
+                            /*TurnToDirection(Convert.ToInt32(direction));
+                            GoForward(Convert.ToInt32(distance / 5));*/
+                            Stop();
+                            Attack(aimedbug[angreifen]);
+                        }
+                        return;
+                    }
+                }
+            }
+            if (Caste == "fighter3")
+            {
+                /*for (int i = 0; i < 300; i++)
+                {
+                    if (aimedposition[i, 0] < 5 && aimedposition[i, 0] > -5 && aimedposition[i, 1] < 5 && aimedposition[i, 1] > -5 && aimedbug[i] != null && time - lastact[i] < 1000 && aimedposition[i, 0] != 0 && aimedposition[i, 1] != 0 && Destination == null)
+                    {
+                        Think("Homerun");
+                        GoToDestination(hill);
+                        return;
+                    }
+                }*/
+                TurnByDegrees(RandomNumber.Number(180));
+                GoForward();
+                double x, y;
+                double direction, distance;
+                double lowestamount = 1000000000000000;
+                int angreifen = 0;
+                getcordsa(Coordinate.GetDistanceBetween(this, hill), Coordinate.GetDegreesBetween(this, hill), out x, out y);
+                for (int i = 0; i < 300; i++)
+                {
+                    if (aimedbug[i] != null)
+                    {
+                        distance = Coordinate.GetDistanceBetween(aimedbug[i], hill);
+                        if (aimedbug[i] != null && distance < lowestamount && time - lastact[i] < 5000 && distance < 5000 && i != current1)
+                        {
+                            lowestamount = distance;
+                            angreifen = i;
+                        }
+                    }
+                }
+                getdistance(x, y, aimedposition[angreifen, 0], aimedposition[angreifen, 1], out distance);
+                TurnByDegrees(RandomNumber.Number(180));
+                GoForward();
+                if ((FriendlyAntsFromSameCasteInViewrange > 15) && aimedbug[angreifen] != null && distance < 5000 && time - lastact[angreifen] < 10000)
+                {
+                    Think("2er Angriff weil beschlossen " + angreifen + current1.ToString());
+                    current2 = angreifen;
+                    getdirection(x, y, aimedposition[angreifen, 0], aimedposition[angreifen, 1], out direction);
+                    /*TurnToDirection(Convert.ToInt32(direction));
+                    GoForward(Convert.ToInt32(distance / 5));*/
+                    Stop();
+                    Attack(aimedbug[angreifen]);
+                    return;
+                }
+                for (int i = 0; i < 300; i++)
+                {
+                    for (int u = 2; u < 300; u++)
+                    {
+                        if (verfugbar[i, u] == Ameisenliste.IndexOf(this)) return;
+                    }
+                }
+                for (int i = 0; i < 300; i++)
+                {
+                    if (aimedbug[i] != null)
+                    {
+                        distance = Coordinate.GetDistanceBetween(aimedbug[i], hill);
+                        if (verfugbar[i, 1] > 10 && aimedbug[i] != null && distance < lowestamount && time - lastact[i] < 5000 && distance < 10000 && i != current1)
+                        {
+                            lowestamount = distance;
+                            Think(current1.ToString());
+                            angreifen = i;
+                        }
+                    }
+                }
+                TurnByDegrees(RandomNumber.Number(180));
+                GoForward();
+                for (int i = 2; i < 300; i++)
+                {
+                    TurnByDegrees(RandomNumber.Number(180));
+                    GoForward();
+                    if (verfugbar[angreifen, i] == 0)
+                    {
+                        verfugbar[angreifen, i] = Ameisenliste.IndexOf(this);
+                        verfugbar[angreifen, 1]++;
+                        getdistance(x, y, aimedposition[angreifen, 0], aimedposition[angreifen, 1], out distance);
+                        if (verfugbar[angreifen, 1] >= 10 && aimedbug[angreifen] != null && distance < 500 && time - lastact[angreifen] < 10000 && distance > 5)
+                        {
+                            current2 = angreifen;
+                            Think("2er Angriff weil beschlossen " + angreifen + current1.ToString());
+                            getdirection(x, y, aimedposition[angreifen, 0], aimedposition[angreifen, 1], out direction);
+                            /*TurnToDirection(Convert.ToInt32(direction));
+                            GoForward(Convert.ToInt32(distance / 5));*/
+                            Stop();
+                            Attack(aimedbug[angreifen]);
                         }
                         return;
                     }
@@ -323,8 +452,8 @@ namespace AntMe.Player.AntBee
         /// </summary>
         public override void GettingTired()
         {
-            if(Caste != "fighter" || Destination == null)
-            GoToDestination(hill);
+            if (Caste != "fighter" || Destination == null)
+                GoToDestination(hill);
         }
 
         /// <summary>
@@ -335,13 +464,13 @@ namespace AntMe.Player.AntBee
         /// <param name="kindOfDeath">Kind of Death</param>
         public override void HasDied(KindOfDeath kindOfDeath)
         {
-            if(Caste == "fighter")
+            if (Caste == "fighter" || Caste == "fighter3")
             {
                 for (int i = 0; i < 300; i++)
                 {
                     for (int u = 2; u < 300; u++)
                     {
-                        if(verfugbar[i, u] == Ameisenliste.IndexOf(this))
+                        if (verfugbar[i, u] == Ameisenliste.IndexOf(this))
                         {
                             verfugbar[i, u] = 0;
                             verfugbar[i, 1]--;
@@ -349,6 +478,7 @@ namespace AntMe.Player.AntBee
                     }
                 }
             }
+            Think(Caste + Ameisenliste.IndexOf(this) + " ist tot");
         }
 
         /// <summary>
@@ -377,7 +507,7 @@ namespace AntMe.Player.AntBee
                     double distance, x, y;
                     getcordsa(Coordinate.GetDistanceBetween(this, hill), Coordinate.GetDegreesBetween(this, hill), out x, out y);
                     getdistance(x, y, aimedposition[i, 0], aimedposition[i, 1], out distance);
-                    if ((time - lastact[i] > 5000/* || distance < 10 && BugsInViewrange == 0*/) && aimedbug[i] != null)
+                    if ((time - lastact[i] > 10000/* || distance < 10 && BugsInViewrange == 0*/) && aimedbug[i] != null)
                     {
                         Think(i + "vergessen " + Convert.ToInt32(distance));
                         Stop();
@@ -403,7 +533,7 @@ namespace AntMe.Player.AntBee
             timer++;
             if (CarryingFruit != null && timer > 10)
             {
-            
+
                 timer = 0;
             }
             if (Caste == "fighter" && Destination == null)
@@ -678,10 +808,10 @@ namespace AntMe.Player.AntBee
             {
                 double directiona = Coordinate.GetDegreesBetween(this, hill);
                 double directionb = Coordinate.GetDegreesBetween(bug, hill);
-                if(CarryingFruit == null)
-                GoAwayFrom(bug, 50);
+                if (CarryingFruit == null)
+                    GoAwayFrom(bug, 50);
             }
-            if(Caste == "fighter" && (Coordinate.GetDistanceBetween(this, bug) < 5 || bug.CurrentEnergy < ((FriendlyAntsFromSameCasteInViewrange) * 30)))
+            if (Caste == "fighter" && (Coordinate.GetDistanceBetween(this, bug) < 5 || bug.CurrentEnergy < ((FriendlyAntsFromSameCasteInViewrange) * 30)))
             {
                 Attack(bug);
             }
@@ -764,7 +894,7 @@ namespace AntMe.Player.AntBee
             {
                 Think(bug.Id + "Angriff weil gesehen");
                 lastact[bug.Id] = time;
-            
+
                 Think("j");
                 Attack(bug);
                 wirdangegriffen[Ameisenliste.IndexOf(this)] = bug.Id;
@@ -838,7 +968,7 @@ namespace AntMe.Player.AntBee
             }
             else if (Caste == "stand" && DistanceToAnthill < 300)
             {
-            
+
                 Think("j");
                 Attack(bug);
             }
@@ -891,7 +1021,7 @@ namespace AntMe.Player.AntBee
         /// <param name="ant">attacking ant</param>
         public override void UnderAttack(Ant ant)
         {
-            if (Caste == "fighter" || Caste == "fighter2" || Caste == "stand" )
+            if (Caste == "fighter" || Caste == "fighter2" || Caste == "stand")
             {
                 Think("j");
                 Attack(ant);
@@ -905,11 +1035,11 @@ namespace AntMe.Player.AntBee
         /// </summary>
         /// <param name="bug">attacking bug</param>
         public override void UnderAttack(Bug bug)
-        {            
+        {
             if (Caste == "fighter")
             {
                 Think(bug.Id + "Angriff weil angegriffen");
-            
+
                 Think("j");
                 Attack(bug);
                 wirdangegriffen[Ameisenliste.IndexOf(this)] = bug.Id;
