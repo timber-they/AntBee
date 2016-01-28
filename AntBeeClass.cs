@@ -910,7 +910,7 @@ namespace AntMe.Player.AntBee
                 Think("j");
                 Attack(ant);
             }
-            else if (Coordinate.GetDistanceBetween(this, ant) < 10 && CarryingFruit == null && CurrentEnergy > MaximumEnergy / 3) GoAwayFrom(ant, 10);
+            else if (Coordinate.GetDistanceBetween(this, ant) < 10 && CarryingFruit == null && CurrentEnergy > MaximumEnergy / 3) //GoAwayFrom(ant, 10);
         }
 
         /// <summary>
@@ -926,14 +926,14 @@ namespace AntMe.Player.AntBee
                 double directiona = Coordinate.GetDegreesBetween(this, hill);
                 double directionb = Coordinate.GetDegreesBetween(bug, hill);
                 if (CarryingFruit == null)
-                    GoAwayFrom(bug, 20);
+                    //GoAwayFrom(bug, 20);
             }
             else if (Caste == "searcher")
             {
                 double directiona = Coordinate.GetDegreesBetween(this, hill);
                 double directionb = Coordinate.GetDegreesBetween(bug, hill);
                 if (CarryingFruit == null)
-                    GoAwayFrom(bug, 20);
+                    //GoAwayFrom(bug, 20);
             }
             if (Caste == "fighter" && (Coordinate.GetDistanceBetween(this, bug) < 5 || bug.CurrentEnergy < ((FriendlyAntsFromSameCasteInViewrange) * 30)))
             {
@@ -1101,7 +1101,7 @@ namespace AntMe.Player.AntBee
                 double directiona = Coordinate.GetDegreesBetween(this, hill);
                 double directionb = Coordinate.GetDegreesBetween(bug, hill);
                 if (CarryingFruit == null)
-                    GoAwayFrom(bug, 20);
+                    //GoAwayFrom(bug, 20);
             }
             //(1, 400);
             for (int i = 0; i < 300; i++)
@@ -1222,7 +1222,7 @@ namespace AntMe.Player.AntBee
                 double directiona = Coordinate.GetDegreesBetween(this, hill);
                 double directionb = Coordinate.GetDegreesBetween(bug, hill);
                 if (CarryingFruit == null)
-                    GoAwayFrom(bug, 20);
+                    //GoAwayFrom(bug, 20);
             }
             for (int i = 0; i < 300; i++)
             {
