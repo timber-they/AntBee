@@ -8,7 +8,7 @@ using System.Text;
 namespace AntMe.Player.AntBee
 {
     [Player(
-        ColonyName = "Ants",
+        ColonyName = "AntBee",
         FirstName = "",
         LastName = ""
     )]
@@ -223,11 +223,11 @@ namespace AntMe.Player.AntBee
                 return "stand";
             else if (r < 5)
                 return "default";
-            else if (r < 21-5)
+            else if (r < 16)
                 return "sugar";
             else if (r < 22)
                 return "fighter2";
-            else if (r < 0+5)
+            else if (r < 5)
                 return "fighter";
             else
                 return "fighter3";
