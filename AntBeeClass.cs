@@ -714,7 +714,7 @@ namespace AntMe.Player.AntBee
                 {
                     if (zucker[i] != null)
                     {
-                        getdistance(x, y, aimedsugar[i, 0], aimedsugar[i, 1], out distance);
+                        distance = Coordinate.GetDistanceBetween(this, zucker[i]);
                         if (distance < lowestdistance && distance < Range / 3)
                         {
                             lowestdistance = distance;
