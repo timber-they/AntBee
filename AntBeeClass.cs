@@ -185,15 +185,6 @@ namespace AntMe.Player.AntBee
             }
             Ameisenliste.Add(this);
             int r = RandomNumber.Number(0, 20);
-            searcher[0]++;
-            for (int i = 1; i < 1000; i++)
-            {
-                if (searcher[i] == 0)
-                {
-                    searcher[i] = Ameisenliste.IndexOf(this);
-                    break;
-                }
-            }
             bool alle = true;
             for (int i = 0; i < 4; i++)
             {
@@ -217,13 +208,24 @@ namespace AntMe.Player.AntBee
                         return "east";
                 }
             }
-            if (searcher[0] < 13)
+            if (searcher[0] < 10)
+            {
+                searcher[0]++;
+                for (int i = 1; i < 1000; i++)
+                {
+                    if (searcher[i] == 0)
+                    {
+                        searcher[i] = Ameisenliste.IndexOf(this);
+                        break;
+                    }
+                }
                 return "searcher";
+            }
             if (r < 0)
                 return "stand";
             else if (r < 5)
                 return "default";
-            else if (r < 16)
+            else if (r < 22)
                 return "sugar";
             else if (r < 22)
                 return "fighter2";
@@ -966,6 +968,7 @@ namespace AntMe.Player.AntBee
                     {
                         searcher[i] = 0;
                         searcher[0]--;
+                        break;
                     }
                 }
             }
