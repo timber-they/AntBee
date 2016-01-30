@@ -94,43 +94,53 @@ namespace AntMe.Player.AntBee
         )]
     [Caste(
         Name = "south",
-        AttackModifier = 2,
-        EnergyModifier = 1,
+        AttackModifier = -1,
+        EnergyModifier = 2,
         LoadModifier = -1,
-        RangeModifier = -1,
+        RangeModifier = 0,
         RotationSpeedModifier = -1,
-        SpeedModifier = 1,
+        SpeedModifier = 2,
         ViewRangeModifier = -1
         )]
     [Caste(
         Name = "west",
-        AttackModifier = 2,
-        EnergyModifier = 1,
+        AttackModifier = -1,
+        EnergyModifier = 2,
         LoadModifier = -1,
-        RangeModifier = -1,
+        RangeModifier = 0,
         RotationSpeedModifier = -1,
-        SpeedModifier = 1,
+        SpeedModifier = 2,
         ViewRangeModifier = -1
         )]
     [Caste(
         Name = "north",
-        AttackModifier = 2,
-        EnergyModifier = 1,
+        AttackModifier = -1,
+        EnergyModifier = 2,
         LoadModifier = -1,
-        RangeModifier = -1,
+        RangeModifier = 0,
         RotationSpeedModifier = -1,
-        SpeedModifier = 1,
+        SpeedModifier = 2,
         ViewRangeModifier = -1
         )]
     [Caste(
         Name = "east",
-        AttackModifier = 2,
-        EnergyModifier = 1,
+        AttackModifier = -1,
+        EnergyModifier = 2,
         LoadModifier = -1,
-        RangeModifier = -1,
+        RangeModifier = 0,
+        RotationSpeedModifier = -1,
+        SpeedModifier = 2,
+        ViewRangeModifier = -1
+        )]
+    [Caste(
+        Name = "star",
+        AttackModifier = -1,
+        EnergyModifier = -1,
+        LoadModifier = -1,
+        RangeModifier = 1,
         RotationSpeedModifier = -1,
         SpeedModifier = 1,
-        ViewRangeModifier = -1
+        ViewRangeModifier = 2
         )]
 
 
@@ -165,6 +175,7 @@ namespace AntMe.Player.AntBee
         public static int[] searcher = new int[1000];
         public static int[] entfernung = new int[4];
         public static bool[] absolute = new bool[4];
+        public static int[] stars = new int[20];
 
         #region Caste
 
@@ -220,6 +231,19 @@ namespace AntMe.Player.AntBee
                     }
                 }
                 return "searcher";
+            }
+            if(stars[0] < 8)
+            {
+                stars[0]++;
+                for (int i = 1; i < 20; i++)
+                {
+                    if(stars[i] == 0)
+                    {
+                        stars[i] = Ameisenliste.IndexOf(this);
+                        break;
+                    }
+                }
+                return "star";
             }
             if (r < 0)
                 return "stand";
@@ -295,7 +319,7 @@ namespace AntMe.Player.AntBee
                 {
                     if (searcher[i] == Ameisenliste.IndexOf(this))
                     {
-                        distance = (i - 1) * 40;
+                        distance = (i - 1) * 40 + 10;
                         break;
                     }
                 }
@@ -383,7 +407,36 @@ namespace AntMe.Player.AntBee
                     }
                     return;
                 }
-
+            }
+            else if(Caste == "star")
+            {
+                int that = 0;
+                for (int i = 1; i < 20; i++)
+                {
+                    if(stars[i] == Ameisenliste.IndexOf(this))
+                    {
+                        that = i;
+                    }
+                }
+                if(DistanceToAnthill > 5)
+                {
+                    Think("back");
+                    if (DistanceToAnthill > 30)
+                    {
+                        TurnToDetination(hill);
+                        GoForward(DistanceToAnthill - 28);
+                    }
+                    else
+                        GoToDestination(hill);
+                    return;
+                }
+                else
+                {
+                    TurnToDirection((359 / 8) * that);
+                    GoForward(Convert.ToInt32(Range / 2.1));
+                    Think("Ich bin ein Star!");
+                    return;
+                }
             }
             if (hill == null)
             {
@@ -784,7 +837,7 @@ namespace AntMe.Player.AntBee
                         {
                             if (CarryingFruit == null && Range > Coordinate.GetDistanceBetween(this, apple[i]) && !IsTired)
                             {
-                                if (Coordinate.GetDistanceBetween(this, apple[i]) > 30)
+                                if (Coordinate.GetDistanceBetween(this, apple[i]) > 30 && Coordinate.GetDistanceBetween(this, apple[i]) < Range / 3)
                                 {
                                     TurnToDetination(apple[i]);
                                     GoForward(Coordinate.GetDistanceBetween(this, apple[i]) / 2);
@@ -830,7 +883,7 @@ namespace AntMe.Player.AntBee
                                 Apfelliste[derapfel, 1]++;
                                 if (CarryingFruit == null)
                                 {
-                                    if (Coordinate.GetDistanceBetween(this, apple[derapfel]) > 30)
+                                    if (Coordinate.GetDistanceBetween(this, apple[derapfel]) > 3 && Coordinate.GetDistanceBetween(this, apple[derapfel]) < Range / 30)
                                     {
                                         TurnToDetination(apple[derapfel]);
                                         GoForward(Coordinate.GetDistanceBetween(this, apple[derapfel]) / 2);
@@ -972,6 +1025,17 @@ namespace AntMe.Player.AntBee
                     }
                 }
             }
+            else if(Caste == "star")
+            {
+                for (int i = 1; i < 20; i++)
+                {
+                    if(stars[i] == Ameisenliste.IndexOf(this))
+                    {
+                        stars[i] = 0;
+                        stars[0]--;
+                    }
+                }
+            }
             Think(Caste + Ameisenliste.IndexOf(this) + " ist tot");
         }
 
@@ -984,7 +1048,9 @@ namespace AntMe.Player.AntBee
         public override void Tick()
         {
             if (Caste == "searcher")
-                Think("HAllo");
+                Think("Hallo");
+            else if (Caste == "star")
+                Think("star");
             if (hill == null)
             {
                 GoToAnthill();
@@ -992,6 +1058,7 @@ namespace AntMe.Player.AntBee
                 Stop();
             }
             time++;
+            if (Caste == "star") return;
             if (Caste == "north")
             {
                 if (DistanceToAnthill > entfernung[0])
@@ -1301,7 +1368,7 @@ namespace AntMe.Player.AntBee
                         {
                             if (CarryingFruit == null)
                             {
-                                if (Coordinate.GetDistanceBetween(this, apple[derapfel]) > 30)
+                                if (Coordinate.GetDistanceBetween(this, apple[derapfel]) > 30 && Coordinate.GetDistanceBetween(this, apple[derapfel]) < Range / 3)
                                 {
                                     TurnToDetination(apple[derapfel]);
                                     GoForward(Coordinate.GetDistanceBetween(this, apple[derapfel]) / 2);
@@ -1337,7 +1404,7 @@ namespace AntMe.Player.AntBee
                                 Apfelliste[derapfel, 1]++;
                                 if (CarryingFruit == null)
                                 {
-                                    if (Coordinate.GetDistanceBetween(this, apple[derapfel]) > 30)
+                                    if (Coordinate.GetDistanceBetween(this, apple[derapfel]) > 30 && Coordinate.GetDistanceBetween(this, apple[derapfel]) < Range / 3)
                                     {
                                         TurnToDetination(apple[derapfel]);
                                         GoForward(Coordinate.GetDistanceBetween(this, apple[derapfel]) / 2);
