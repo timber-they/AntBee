@@ -8,7 +8,7 @@ using System.Text;
 namespace AntMe.Player.AntBee
 {
     [Player(
-        ColonyName = "AntBee",
+        ColonyName = "Ants",
         FirstName = "",
         LastName = ""
     )]
@@ -217,17 +217,17 @@ namespace AntMe.Player.AntBee
                         return "east";
                 }
             }
-            if(searcher[0] < 15)
+            if (searcher[0] < 13)
                 return "searcher";
             if (r < 0)
                 return "stand";
             else if (r < 5)
                 return "default";
-            else if (r < 15)
+            else if (r < 21-5)
                 return "sugar";
-            else if (r < 5)
+            else if (r < 22)
                 return "fighter2";
-            else if (r < 21)
+            else if (r < 0+5)
                 return "fighter";
             else
                 return "fighter3";
@@ -316,9 +316,9 @@ namespace AntMe.Player.AntBee
                         }
                         if (alle)
                         {
-                            if(entfernung[0] > entfernung[2])
+                            if (entfernung[0] > entfernung[2])
                             {
-                                if(entfernung[1] > entfernung[3])
+                                if (entfernung[1] > entfernung[3])
                                 {
                                     TurnToDirection(315);
                                 }
@@ -958,7 +958,7 @@ namespace AntMe.Player.AntBee
                     }
                 }
             }
-            if(Caste == "searcher")
+            if (Caste == "searcher")
             {
                 for (int i = 1; i < 1000; i++)
                 {
@@ -998,7 +998,7 @@ namespace AntMe.Player.AntBee
                 else if (DistanceToAnthill < entfernung[0] - 5)
                     absolute[0] = true;
                 Think(entfernung[0].ToString() + absolute[0]);
-                if(DistanceToAnthill == 0 && Direction != 270)
+                if (DistanceToAnthill == 0 && Direction != 270)
                 {
                     TurnToDirection(270);
                     GoForward();
@@ -1043,7 +1043,7 @@ namespace AntMe.Player.AntBee
                 {
                     entfernung[3] = DistanceToAnthill;
                 }
-                else if(DistanceToAnthill < entfernung[3] - 5)
+                else if (DistanceToAnthill < entfernung[3] - 5)
                     absolute[3] = true;
                 Think(entfernung[3].ToString() + absolute[3]);
                 if (DistanceToAnthill == 0 && Direction != 180)
