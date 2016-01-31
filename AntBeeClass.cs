@@ -245,6 +245,7 @@ namespace AntMe.Player.AntBee
                 }
                 return "star";
             }
+            return "fighter";
             if (r < 0)
                 return "stand";
             else if (r < 5)
@@ -344,7 +345,7 @@ namespace AntMe.Player.AntBee
                         break;
                     }
                 }
-                if(distance == 0)
+                if (distance == 0)
                 {
                     Think("ERROR");
                     GoToAnthill();
@@ -358,9 +359,9 @@ namespace AntMe.Player.AntBee
                     {
                         Think("korrigiere");
                         getcordsa(DistanceToAnthill, Coordinate.GetDegreesBetween(this, hill), out x, out y);
-                        if(x > 0)
+                        if (x > 0)
                         {
-                            if(y > 0)
+                            if (y > 0)
                             {
                                 angle = 315;
                             }
@@ -979,16 +980,17 @@ namespace AntMe.Player.AntBee
                         {
                             if (CarryingFruit == null && Range - WalkedRange - Coordinate.GetDistanceBetween(this, apple[i]) > Range * 2 / 3 && !IsTired)
                             {
-                                if (Coordinate.GetDistanceBetween(this, apple[i]) > 20)
+                                Think("gehzuapfel");
+                                if (Coordinate.GetDistanceBetween(this, apple[i]) > 40)
                                 {
                                     if (Direction != Coordinate.GetDegreesBetween(this, apple[i]))
                                         TurnToDetination(apple[i]);
-                                    GoForward(Coordinate.GetDistanceBetween(this, apple[i]) / 2);
+                                    GoForward(Coordinate.GetDistanceBetween(this, apple[i]) / 3);
                                 }
                                 else
                                     GoToDestination(apple[i]);
                             }
-                            else if (CarryingFruit == null && IsTired)
+                            else if (IsTired)
                             {
                                 if (DistanceToAnthill > 20)
                                 {
@@ -1026,11 +1028,11 @@ namespace AntMe.Player.AntBee
                                 Apfelliste[derapfel, 1]++;
                                 if (CarryingFruit == null && Range - WalkedRange - Coordinate.GetDistanceBetween(this, apple[derapfel]) > Range * 2 / 3)
                                 {
-                                    if (Coordinate.GetDistanceBetween(this, apple[derapfel]) > 20)
+                                    if (Coordinate.GetDistanceBetween(this, apple[derapfel]) > 40)
                                     {
                                         if (Direction != Coordinate.GetDegreesBetween(this, apple[derapfel]))
                                             TurnToDetination(apple[derapfel]);
-                                        GoForward(Coordinate.GetDistanceBetween(this, apple[derapfel]) / 2);
+                                        GoForward(Coordinate.GetDistanceBetween(this, apple[derapfel]) / 3);
                                     }
                                     else
                                         GoToDestination(apple[derapfel]);
@@ -1096,7 +1098,7 @@ namespace AntMe.Player.AntBee
         {
             if (Caste != "fighter" && Caste != "fighter3" && Caste != "north" && Caste != "south" && Caste != "west" && Caste != "east" || Destination == null)
             {
-                if(Caste == "north" || Caste == "south" || Caste == "west" || Caste == "east")
+                if (Caste == "north" || Caste == "south" || Caste == "west" || Caste == "east")
                 {
                     GoToDestination(hill);
                     return;
@@ -1199,8 +1201,8 @@ namespace AntMe.Player.AntBee
         /// </summary>
         public override void Tick()
         {
-            if (Caste == "searcher") 
-            Think(searcher[0].ToString());
+            if (Caste == "searcher")
+                Think(searcher[0].ToString());
             double xt, yt;
             getcordsa(DistanceToAnthill, Coordinate.GetDegreesBetween(this, hill), out xt, out yt);
             //Think("x: " + Convert.ToInt32(xt) + " Y: " + Convert.ToInt32(yt) + " A: " + Convert.ToInt32(Coordinate.GetDegreesBetween(this, hill)) + " AH: " + Convert.ToInt32(Coordinate.GetDegreesBetween(hill, this)));
@@ -1456,8 +1458,8 @@ namespace AntMe.Player.AntBee
                     if (apple[i] != null)
                     {
                         if (apple[i].Id == CarryingFruit.Id)
-                        {
-                            Think(i.ToString() + "akt");
+                        {                            
+                            Think(i.ToString() + "akt" + Apfelliste[i, 0]);
                             aimedapple[i, 0] = x;
                             aimedapple[i, 1] = y;
                             lastacta[i] = time;
@@ -1523,7 +1525,7 @@ namespace AntMe.Player.AntBee
                 if (apple[i] != null && !abg)
                     if (Apfelliste[i, 0] == fruit.Id || fruit.Id == apple[i].Id)
                     {
-                        Think(i + "akt");
+                        Think(i + "akt" + Apfelliste[i, 0]);
                         Apfelliste[i, 0] = fruit.Id;
                         apple[i] = fruit;
                         derapfel = i;
@@ -1555,27 +1557,7 @@ namespace AntMe.Player.AntBee
             if (Caste == "default")
             {
                 bool gefunden = false;
-                for (int i = 0; i < 10; i++)
-                {
-                    for (int u = 2; u < 20; u++)
-                    {
-                        if (Apfelliste[i, u] == Ameisenliste.IndexOf(this) && apple[i] != null && !IsTired)
-                        {
-                            if (CarryingFruit == null && Range - WalkedRange - Coordinate.GetDistanceBetween(this, apple[derapfel]) > Range * 2 / 3)
-                            {
-                                if (Coordinate.GetDistanceBetween(this, apple[derapfel]) > 20)
-                                {
-                                    if (Direction != Coordinate.GetDegreesBetween(this, apple[derapfel]))
-                                        TurnToDetination(apple[derapfel]);
-                                    GoForward(Coordinate.GetDistanceBetween(this, apple[derapfel]) / 3);
-                                }
-                                else
-                                    GoToDestination(apple[derapfel]);
-                            }
-                            return;
-                        }
-                    }
-                }
+                GoToDestination(fruit);
                 for (int i = 0; i < 10; i++)
                 {
                     if (apple[i] != null && Apfelliste[i, 0] != 0)
@@ -1589,7 +1571,7 @@ namespace AntMe.Player.AntBee
                         }
                     }
                 }
-                if (derapfel < 10 && Apfelliste[derapfel, 1] < 6 && gefunden && !IsTired && apple[derapfel] != null)
+                if (derapfel < 10 && Apfelliste[derapfel, 1] < 100 && gefunden && !IsTired && apple[derapfel] != null)
                     if (apple[derapfel] != null)
                         for (int i = 2; i < 20; i++)
                         {
@@ -1600,18 +1582,37 @@ namespace AntMe.Player.AntBee
                                 Apfelliste[derapfel, 1]++;
                                 if (CarryingFruit == null && Range - WalkedRange - Coordinate.GetDistanceBetween(this, apple[derapfel]) > Range * 2 / 3)
                                 {
-                                    if (Coordinate.GetDistanceBetween(this, apple[derapfel]) > 20)
+                                        GoToDestination(apple[derapfel]);
+                                }
+                                else if(Range - WalkedRange - Coordinate.GetDistanceBetween(this, apple[derapfel]) < Range * 2 / 3)
+                                {
+                                    if (DistanceToAnthill > 20)
                                     {
-                                        if (Direction != Coordinate.GetDegreesBetween(this, apple[derapfel]))
-                                            TurnToDetination(apple[derapfel]);
-                                        GoForward(Coordinate.GetDistanceBetween(this, apple[derapfel]) / 2);
+                                        if (Direction != Coordinate.GetDegreesBetween(this, hill)) TurnToDetination(hill);
+                                        GoForward(DistanceToAnthill - 15);
                                     }
                                     else
-                                        GoToDestination(apple[derapfel]);
+                                    {
+                                        GoToDestination(hill);
+                                    }
                                 }
                                 return;
                             }
                         }
+                for (int i = 0; i < 10; i++)
+                {
+                    for (int u = 2; u < 20; u++)
+                    {
+                        if (Apfelliste[i, u] == Ameisenliste.IndexOf(this) && apple[i] != null && !IsTired)
+                        {
+                            if (CarryingFruit == null && Range - WalkedRange - Coordinate.GetDistanceBetween(this, apple[derapfel]) > Range * 2 / 3)
+                            {
+                                    GoToDestination(apple[derapfel]);
+                            }
+                            return;
+                        }
+                    }
+                }
                 if (Coordinate.GetDistanceBetween(this, hill) < 20)
                     TurnToDirection((359 / Ameisenliste.Count) * Ameisenliste.IndexOf(this));
                 GoForward(50);
@@ -1780,7 +1781,9 @@ namespace AntMe.Player.AntBee
         /// <param name="ant">spotted ant</param>
         public override void SpotsFriend(Ant ant)
         {
-
+            if (ant.CarriedFruit != null && Caste == "default")
+                if (ant.CurrentLoad > ant.CarriedFruit.Amount)
+                    GoToDestination(ant.CarriedFruit);
         }
 
         /// <summary>
@@ -2482,3 +2485,4 @@ namespace AntMe.Player.AntBee
         #endregion
     }
 }
+
