@@ -584,7 +584,6 @@ namespace AntMe.Player.AntBee
                             return;
                         }
                     }
-                    return;
                 }
             }
             else if (Caste == "star")
@@ -969,7 +968,7 @@ namespace AntMe.Player.AntBee
                 if (lowestdistance < this.Range / 3 && zucker[nearest] != null)
                 {
                     //Think(nearest.ToString());
-                    if (unterwegs[nearest, 1] * MaximumLoad < zucker[nearest].Amount * 2 && CurrentLoad < MaximumLoad / 10)
+                    if (unterwegs[nearest, 1] * MaximumLoad < zucker[nearest].Amount * 1.8 && CurrentLoad < MaximumLoad / 10)
                     {
                         if (Coordinate.GetDistanceBetween(this, zucker[nearest]) > 2 && Range - WalkedRange - Coordinate.GetDistanceBetween(this, zucker[nearest]) > Range * 2 / 3 && !IsTired && (Caste != "sugar" || (CurrentLoad < MaximumLoad / 10)))
                         {
@@ -986,12 +985,15 @@ namespace AntMe.Player.AntBee
                     {
                         for (int i = 0; i < 4; i++)
                         {
-                            int distanz = Convert.ToInt32(Coordinate.GetDistanceBetween(this, zucker[i]));
-                            if (zucker[i] != null && Range - WalkedRange - distanz > Range * 2 / 3)
+                            if (zucker[i] != null)
                             {
-                                TurnToDetination(zucker[i]);
-                                GoForward(distanz);
-                                return;
+                                int distanz = Convert.ToInt32(Coordinate.GetDistanceBetween(this, zucker[i]));
+                                if (zucker[i] != null && Range - WalkedRange - distanz > Range * 2 / 3)
+                                {
+                                    TurnToDetination(zucker[i]);
+                                    GoForward(distanz);
+                                    return;
+                                }
                             }
                         }
                         if (Direction != Coordinate.GetDegreesBetween(this, zucker[nearest]))
@@ -1004,13 +1006,13 @@ namespace AntMe.Player.AntBee
                         {
                             for (int u = 2; u < 100; u++)
                             {
-                                if (unterwegs[i, u] == Ameisenliste.IndexOf(this)) return;
+                                if (unterwegs[i, u] == Ameisenliste.IndexOf(this)) break;
                                 else if (unterwegs[i, u] == 0)
                                 {
                                     //Think("eingetragen - Unterwegs: " + unterwegs[i, 1]);
                                     unterwegs[i, u] = Ameisenliste.IndexOf(this);
                                     unterwegs[i, 1]++;
-                                    return;
+                                    break;
                                 }
                             }
                         }
@@ -1050,6 +1052,7 @@ namespace AntMe.Player.AntBee
                                 }
                                 else
                                     GoToDestination(apple[i]);
+                                return;
                             }
                             else if (IsTired && (Caste != "sugar" || (CurrentLoad < MaximumLoad / 10 || Direction != Coordinate.GetDegreesBetween(this, hill))) && (Caste != "fighter2" || !spotted))
                             {
@@ -1060,8 +1063,8 @@ namespace AntMe.Player.AntBee
                                 }
                                 else
                                     GoToDestination(hill);
+                                return;
                             }
-                            return;
                         }
                     }
                 }
@@ -1097,8 +1100,8 @@ namespace AntMe.Player.AntBee
                                     }
                                     else
                                         GoToDestination(apple[derapfel]);
+                                    return;
                                 }
-                                return;
                             }
                         }
 
@@ -1148,9 +1151,9 @@ namespace AntMe.Player.AntBee
                 if (Coordinate.GetDistanceBetween(this, hill) < 20) TurnToDirection((359 / Ameisenliste.Count) * Ameisenliste.IndexOf(this));
                 GoForward(50);
             }
-            if(DistanceToAnthill > 10 && (Caste != "default" || CarryingFruit != null) && Caste != "fighter2")
+            if(DistanceToAnthill > 10 && Caste != "default" && Caste != "fighter2" && false)
                 GoToAnthill();
-            else
+            else if(CurrentLoad < 5)
             {
                 TurnToDirection((359 / Ameisenliste.Count) * Ameisenliste.IndexOf(this));
                 GoForward(50);
@@ -1955,7 +1958,7 @@ namespace AntMe.Player.AntBee
                 enemies.Add(ant);
                 Think("Liste erweitert");
             }
-            else if (Coordinate.GetDistanceBetween(this, ant) < 10 && CarryingFruit == null && ant.AttackStrength > 20) GoAwayFrom(ant, 10);
+            else if (Coordinate.GetDistanceBetween(this, ant) < 5 && CarryingFruit == null && ant.AttackStrength > 20 && Caste == "sugar") GoAwayFrom(ant, 10);
         }
 
         /// <summary>
