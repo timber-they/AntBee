@@ -249,9 +249,9 @@ namespace AntMe.Player.AntBee
             }
             if (r < 0)
                 return "stand";
-            else if (r < 8)
+            else if (r < 5)
                 return "default";
-            else if (r < 22)
+            else if (r < 16)
                 return "sugar";
             else if (r < 22)
                 return "fighter2";
@@ -363,6 +363,7 @@ namespace AntMe.Player.AntBee
                 int distance = 0;
                 double x, y, lx, ly, direction, distanz, angle;
                 distance = (searcher.IndexOf(this)) * Viewrange + Viewrange;
+                getcordsa(DistanceToAnthill, Coordinate.GetDegreesBetween(this, hill), out x, out y);
 
                 if (distance == 0)
                 {
@@ -377,7 +378,6 @@ namespace AntMe.Player.AntBee
                     if (DistanceToAnthill > 5)
                     {
                         Think("korrigiere" + Convert.ToInt32(distance) + " " + DistanceToAnthill);
-                        getcordsa(DistanceToAnthill, Coordinate.GetDegreesBetween(this, hill), out x, out y);
                         if (x > 0)
                         {
                             if (y > 0)
@@ -423,7 +423,9 @@ namespace AntMe.Player.AntBee
                         }
                         if (alle)
                         {
-                            if (entfernung[0] > entfernung[2])
+                            double distanceh;
+                            getdistance(x, y, basex, basey, out distanceh);
+                            if (entfernung[0] > entfernung[2] && (basey <= 0 || distanceh > distance) || (basey < 0 && distanceh >= distance))
                             {
                                 if (entfernung[1] > entfernung[3])
                                 {
@@ -458,7 +460,7 @@ namespace AntMe.Player.AntBee
                         {
                             distance--;
                         }*/
-                        if(alle)
+                        if(alle || time > 13000)
                             GoForward(distance);
                     }
                     return;
