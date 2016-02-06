@@ -16,9 +16,9 @@ namespace AntMe.Player.AntBee
         Name = "default",
         AttackModifier = -1,
         EnergyModifier = -1,
-        LoadModifier = 1,
+        LoadModifier = 2,
         RangeModifier = -1,
-        RotationSpeedModifier = 1,
+        RotationSpeedModifier = 0,
         SpeedModifier = 2,
         ViewRangeModifier = -1
     )]
@@ -274,7 +274,13 @@ namespace AntMe.Player.AntBee
         {
             if (CurrentLoad > 5)
             {
-                GoToAnthill();
+                if(DistanceToAnthill > 20)
+                {
+                    TurnToDetination(hill);
+                    GoForward(DistanceToAnthill - 10);
+                }
+                else
+                    GoToAnthill();
                 return;
             }
             if (timera == null) timera = this;
@@ -647,7 +653,7 @@ namespace AntMe.Player.AntBee
                     GoToDestination(hill);
                 return;
             }
-            else if (Caste != "sugar" || CurrentLoad < MaximumLoad / 10)
+            else if (Caste != "sugar" || CurrentLoad < MaximumLoad / 10 && CarryingFruit == null)
             {
                 if (Coordinate.GetDistanceBetween(this, hill) < 10) TurnToDirection(norandom); norandom += 5;
                 GoForward(50);
@@ -801,7 +807,7 @@ namespace AntMe.Player.AntBee
                     }
                 }
             }
-            else if (Caste == "default")
+            else if (Caste == "default" && CarryingFruit == null)
             {
                 for (int i = 0; i < 10; i++)
                 {
@@ -860,7 +866,7 @@ namespace AntMe.Player.AntBee
             }
             if (DistanceToAnthill > 10 && Caste != "fighter2" && false)
                 GoToAnthill();
-            else if (CurrentLoad < 5)
+            else if (CurrentLoad < 5 && CarryingFruit == null)
             {
                 if (Coordinate.GetDistanceBetween(this, hill) < 10)
                     TurnToDirection(norandom); norandom += 5;
@@ -1263,7 +1269,14 @@ namespace AntMe.Player.AntBee
                         aimedsugar[i, 1] = 3000000;
                     }
             }
-
+            if(CarryingFruit != null && Direction != Coordinate.GetDegreesBetween(this, hill))
+            {
+                TurnToDetination(hill);
+                if (DistanceToAnthill > 20)
+                    GoForward(DistanceToAnthill - 10);
+                else
+                    GoToAnthill();
+            }
         }
 
         #endregion
@@ -1278,7 +1291,7 @@ namespace AntMe.Player.AntBee
         /// <param name="fruit">spotted fruit</param>
         public override void Spots(Fruit fruit)
         {
-            if(Caste == "default" && NeedsCarrier(fruit))
+            if(Caste == "default" && NeedsCarrier(fruit) && CarryingFruit == null)
             {
                 GoToDestination(fruit);
             }
@@ -1292,7 +1305,7 @@ namespace AntMe.Player.AntBee
                     apfelliste[i, 0] = fruit.Id;
                 }
             }
-            if (!no)
+            if (!no && CarryingFruit == null)
             {
                 for (int i = 0; i < 10; i++)
                 {
@@ -1313,7 +1326,7 @@ namespace AntMe.Player.AntBee
             }
             else
             {
-                if (Caste == "default")
+                if (Caste == "default" && CarryingFruit == null)
                 {
                     for (int i = 0; i < 10; i++)
                     {
@@ -1550,7 +1563,7 @@ namespace AntMe.Player.AntBee
                 enemies.Add(ant);
                 Think("Liste erweitert");
             }
-            else if (Coordinate.GetDistanceBetween(this, ant) < 5 && CarryingFruit == null && ant.AttackStrength > 20 && Caste == "sugar") GoAwayFrom(ant, 10);
+            else if (Coordinate.GetDistanceBetween(this, ant) < 5 && ant.AttackStrength > 18 && (Caste == "sugar" || Caste == "default")) GoAwayFrom(ant, 10);
         }
 
         /// <summary>
@@ -1561,7 +1574,7 @@ namespace AntMe.Player.AntBee
         /// <param name="bug">spotted bug</param>
         public override void SpotsEnemy(Bug bug)
         {
-            if (Caste == "sugar" && Coordinate.GetDistanceBetween(this, bug) < 10)
+            if ((Caste == "sugar" || Caste == "default" || Strength == 0) && Coordinate.GetDistanceBetween(this, bug) < 10)
             {
                 GoAwayFrom(bug, 10);
                 return;
