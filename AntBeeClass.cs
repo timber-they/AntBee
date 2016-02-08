@@ -8,7 +8,7 @@ using System.Text;
 namespace AntMe.Player.AntBee
 {
     [Player(
-        ColonyName = "AntBee",
+        ColonyName = "AntBeeOpt",
         FirstName = "",
         LastName = ""
     )]
@@ -248,13 +248,13 @@ namespace AntMe.Player.AntBee
             }
             if (r < 0)
                 return "stand";
-            else if (r < 6)
+            else if (r < 8)
                 return "default";
-            else if (r < 17)
+            else if (r < 19)
                 return "sugar";
-            else if (r < 22)
+            else if (r < 20)
                 return "fighter2";
-            else if (r < 22)
+            else if (r < 20)
                 return "fighter";
             else
                 return "fighter3";
@@ -274,7 +274,7 @@ namespace AntMe.Player.AntBee
         {
             if (CurrentLoad > 5)
             {
-                if(DistanceToAnthill > 20)
+                if (DistanceToAnthill > 20)
                 {
                     TurnToDetination(hill);
                     GoForward(DistanceToAnthill - 10);
@@ -930,7 +930,7 @@ namespace AntMe.Player.AntBee
                 {
                     for (int u = 2; u < 10; u++)
                     {
-                        if(apfelliste[i, u] == Ameisenliste.IndexOf(this))
+                        if (apfelliste[i, u] == Ameisenliste.IndexOf(this))
                         {
                             apfelliste[i, u] = 0;
                             apfelliste[i, 1]--;
@@ -1215,7 +1215,7 @@ namespace AntMe.Player.AntBee
                 Think("Aha");
                 for (int i = 0; i < 10; i++)
                 {
-                    if(apple[i] == CarryingFruit)
+                    if (apple[i] == CarryingFruit)
                     {
                         Think("weg");
                         apple[i] = null;
@@ -1228,22 +1228,22 @@ namespace AntMe.Player.AntBee
             }
             for (int i = 0; i < 10; i++)
             {
-                if(apple[i] != null)
-                if(time - lastacta[i] > 1000 || apple[i].Amount == 0)
-                {
-                    Think("weg");
-                    apple[i] = null;
-                    for (int u = 0; u < 10; u++)
+                if (apple[i] != null)
+                    if (time - lastacta[i] > 1000 || apple[i].Amount == 0)
                     {
-                        apfelliste[i, u] = 0;
+                        Think("weg");
+                        apple[i] = null;
+                        for (int u = 0; u < 10; u++)
+                        {
+                            apfelliste[i, u] = 0;
+                        }
                     }
-                }
             }
-            if(CarryingFruit != null)
+            if (CarryingFruit != null)
             {
                 for (int i = 0; i < 10; i++)
                 {
-                    if(apple[i] == CarryingFruit)
+                    if (apple[i] == CarryingFruit)
                     {
                         Think(apfelliste[i, 1].ToString());
                         lastacta[i] = time;
@@ -1269,7 +1269,7 @@ namespace AntMe.Player.AntBee
                         aimedsugar[i, 1] = 3000000;
                     }
             }
-            if(CarryingFruit != null && Direction != Coordinate.GetDegreesBetween(this, hill))
+            if (CarryingFruit != null && Direction != Coordinate.GetDegreesBetween(this, hill))
             {
                 TurnToDetination(hill);
                 if (DistanceToAnthill > 20)
@@ -1291,7 +1291,7 @@ namespace AntMe.Player.AntBee
         /// <param name="fruit">spotted fruit</param>
         public override void Spots(Fruit fruit)
         {
-            if(Caste == "default" && NeedsCarrier(fruit) && CarryingFruit == null)
+            if (Caste == "default" && NeedsCarrier(fruit) && CarryingFruit == null)
             {
                 GoToDestination(fruit);
             }
@@ -1322,7 +1322,7 @@ namespace AntMe.Player.AntBee
                         }
                         break;
                     }
-                }                
+                }
             }
             else
             {
@@ -2197,5 +2197,4 @@ namespace AntMe.Player.AntBee
         #endregion
     }
 }
-
 
