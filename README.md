@@ -1,5 +1,4 @@
 # AntBee
-Dive into the coolest, most exciting programming game the world has ever seen! Or, exaggerations aside: sit down and immerse yourself in a very interesting, useful and relevant game that teaches you how to write real, working code.
-
-In AntMe! you take on the role of a whole ant colony. Search for food in a virtual world, battle dangerous bugs and defend your anthill from rival colonies. But you don't control your ants with a boring old mouse and keyboard combo. That's so last year. No - in AntMe! you use something far more powerful: real source code. You'll learn how to write real programs in real programming languages that tell all the ants in your colony how to act and what to do.
-
+Dieser Code wurde für die Artiso AntMe! League 2015, ein Programmierwettbewerb für Schüler, geschriben. Dort wurde die Version 1.7 von AntMe! verwendet. Für mehr Informationen (Preise etc.) zur AntMe! League schau [hier](http://www.artiso.com/antme-league/).
+Mehr Informationen zur freien Lizenz, die unter anderem verbreiten und remixen erlaubt, findet ihr im LICENCE file in diesem Repo.
+Wer also die ein oder andere Anregung für seine Ameisen bracht, kann sich unseren Code ja mal anschauen...
